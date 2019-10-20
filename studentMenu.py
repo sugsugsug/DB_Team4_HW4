@@ -41,14 +41,19 @@ def print_student_report():
     ID = user_acc.ID
     name = user_acc.name
     c = user_acc.conn.cursor()
+    dept_name = ""
+    tot_cred = ""
 
     #get department name and total credit
     c.execute("SELECT dept_name, tot_cred\
                 FROM student\
                 WHERE ID = %s and name = %s", (ID, name))
     data = c.fetchone()
-    
-    print("\nWelcome %s!\nYou are a member of %s\nYou have taken total of %d credits" % (name, data[0], data[1]))
+    if (data[0] != None):
+        dept_name = data[0]
+    if (data[1] != None):
+        tot_cred = str(data[1])
+    print("\nWelcome %s!\nYou are a member of %s\nYou have taken total of %s credits" % (name, dept_name, tot_cred))
     print("\nSemester report")
 
     #get distinct year and semester in descending order
@@ -64,17 +69,41 @@ def print_student_report():
                 FROM takes, course\
                 WHERE ID = %s and takes.course_id = course.course_id and year = %s and semester = %s", (ID, group[0], group[1]))
         courses = c.fetchall()
+
         #calculate GPA
         sum = 0.0
         creditSum = 0.0
+        isGPAnull = True
         for course in courses:
-            sum = sum + convertToGP(course[3]) * float(course[4])
-            creditSum = creditSum + float(course[4])
-            gpa = sum / creditSum
+            if (course[3] != None and course[4] != None):
+                sum = sum + convertToGP(course[3]) * float(course[4])
+                creditSum = creditSum + float(course[4])
+                gpa = sum / creditSum
+                isGPAnull = False
+    
         #print semester info
-        print("\n%s %s GPA : %f" % (group[0], group[1], gpa))
+        if (isGPAnull == False):
+            print("\n%s %s GPA : %f" % (group[0], group[1], gpa))
+        else:
+            print("\n%s %s GPA : " % (group[0], group[1]))
+
+        #print each course info    
         print("course_id\ttitle\tdept_name\tcredits\tgrade")
-        print("%s\t%s\t%s\t%s\t%s" % (course[0], course[1], course[2], course[4], course[3]))
+        for course in courses:
+            title = ""
+            dept_name = ""
+            grade = ""
+            tot_cred = ""
+            if (course[1] != None):
+                title = course[1]
+            if (course[2] != None):
+                dept_name = course[2]
+            if (course[3] != None):
+                grade = course[3]
+            if (course[4] != None and isGPAnull == False):
+                tot_cred = str(course[4])
+
+            print("%s\t%s\t%s\t%s\t%s" % (course[0], title, dept_name, tot_cred, grade))
     c.close()
     return
 
