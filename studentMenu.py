@@ -75,6 +75,7 @@ def print_student_report():
         creditSum = 0.0
         isGPAnull = True
         for course in courses:
+            #only calculate gpa if credit and gpa is not null
             if (course[3] != None and course[4] != None):
                 sum = sum + convertToGP(course[3]) * float(course[4])
                 creditSum = creditSum + float(course[4])
@@ -85,6 +86,7 @@ def print_student_report():
         if (isGPAnull == False):
             print("\n%s %s GPA : %f" % (group[0], group[1], gpa))
         else:
+            #when gpa is null, don't print gpa
             print("\n%s %s GPA : " % (group[0], group[1]))
 
         #print each course info    
@@ -94,13 +96,15 @@ def print_student_report():
             dept_name = ""
             grade = ""
             tot_cred = ""
+            #check for null
             if (course[1] != None):
                 title = course[1]
             if (course[2] != None):
                 dept_name = course[2]
             if (course[3] != None):
                 grade = course[3]
-            if (course[4] != None and isGPAnull == False):
+            #set to null if grade or credit is None
+            if (course[4] != None and course[3] != None):
                 tot_cred = str(course[4])
 
             print("%s\t%s\t%s\t%s\t%s" % (course[0], title, dept_name, tot_cred, grade))
