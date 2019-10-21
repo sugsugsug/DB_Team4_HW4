@@ -28,6 +28,39 @@ def print_course_report():
 
 def print_advisee_report():
     #구현
+
+    ID = user_acc.ID
+    name = user_acc.name
+    c = user_acc.conn.cursor()
+
+    #get all advisees of the instructor
+    c.execute("SELECT DISTINCT S.ID, S.name, S.dept_name, S.tot_cred\
+                FROM advisor as A, student as S\
+                WHERE A.i_ID = %s and A.s_ID = S.ID", (ID,))
+    
+    adviseelist = c.fetchall()
+
+    #print each advisee info    
+    print("ID\tname\tdept_name\ttot_cred")
+    for advisee in adviseelist:
+        advisee_id = ""
+        advisee_name = ""
+        advisee_dept_name = ""
+        advisee_tot_cred = ""
+
+        #check for null
+        if (advisee[0] != None):
+            advisee_id = advisee[0]
+        if (advisee[1] != None):
+            advisee_name = advisee[1]
+        if (advisee[2] != None):
+            advisee_dept_name = advisee[2]
+        if (advisee[3] != None):
+            advisee_tot_cred = str(advisee[3])
+
+        print("%s\t%s\t%s\t%s" % (advisee_id, advisee_name, advisee_dept_name, advisee_tot_cred))
+        
+    c.close()
     return 
 
 def quit_menu():
