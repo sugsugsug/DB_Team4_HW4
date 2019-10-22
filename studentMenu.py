@@ -60,7 +60,7 @@ def print_student_report():
     c.execute("SELECT distinct year, semester\
                 FROM takes\
                 WHERE id = %s\
-                ORDER BY year DESC, semester", (ID,))
+                ORDER BY year DESC,field(semester,'Winter','Fall','Summer','Spring')", (ID,))
     groups = c.fetchall()
 
     #for each year and semester, get all courses information
@@ -112,8 +112,48 @@ def print_student_report():
     return
 
 def print_time_table():
+    ID = user_acc.ID
     c = user_acc.conn.cursor()
-    #구현
+    
+    c.execute("SELECT distinct year, semester\
+    FROM student natural join takes\
+    WHERE ID = '%s'\
+    ORDER BY year desc, field(semester,'Winter','Fall','Summer','Spring');" % (ID,))
+        # 최근 순으로 정렬
+    semes = c.fetchall()
+    
+    print("Please select semester to view")
+    i=0
+    for each in semes:
+       i=i+1
+       print("%d) %s %s" % (i,each[0],each[1])) 
+    try:
+        j = int(input())
+        if(j<1 or j>i):
+            raise Exception("range is not correct!")
+    except Exception as e:
+        c.close()
+        print(e)
+        return
+    # if range isn't correct or invalid input comes, print Exception and return
+    
+    print("\nTime Table\n")
+    
+    c.execute("SELECT course_id,title,day,start_hr,start_min,end_hr,end_min\
+            FROM course natural join \
+                (SELECT * from time_slot natural join \
+                    (SELECT course_id, time_slot_id \
+		            from takes natural join section \
+		            where ID = '%s' and year='%s' and semester='%s')as T)as TT;" % (ID,semes[j-1][0],semes[j-1][1]))
+    
+    # ID, year, semester에 맞는 time_slot을 가져오고, Title 알기 위해 course와 조인 후, 출력
+    
+    tt = c.fetchall()
+    
+    print("%10s\t%40s\t%15s\t%10s\t%10s" %("course_id","title","day","start_time","end_time"))
+    for i in tt:
+        print("%10s\t%40s\t%15s\t%10s : %s\t%10s : %s" % i )
+    
     c.close()
     return
 
@@ -127,3 +167,4 @@ def quit_menu():
 def print_wrong():
     print("\nWrong menu number!")
     return
+
